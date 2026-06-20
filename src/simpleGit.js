@@ -9,7 +9,7 @@ async function  status(){
 async function push() {
     console.log(await git.add("."))
     console.log(await git.commit("implement genrate function to create random id"));
-    console.log(git.push("origin","main"));
+    console.log(await git.push("origin","main"));
     
     console.log((await git.branch()).current);
     
