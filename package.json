@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon --ignore output/ index.js"
   },
   "keywords": [],
   "author": "",
@@ -19,9 +19,13 @@
   },
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1073.0",
     "aws-sdk": "^2.1693.0",
+    "bullmq": "^5.79.0",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^5.11.1",
     "redis": "^6.0.0",
     "simple-git": "^3.36.0"
   },
