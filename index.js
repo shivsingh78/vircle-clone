@@ -17,16 +17,14 @@ app.post("/deploy",async (req,res)=>{
   
     try {
       const repoUrl=req.body.repoUrl;
-      console.log("start");
       
     const id=genrate()
     const outerPath=path.join(process.cwd(),"output",id)
     
-    console.log(await git.clone(repoUrl,outerPath));
+    await git.clone(repoUrl,outerPath)
     
 
     const files= await getAllFiles(outerPath)
-    console.log(files.length);
     console.log(files);
     
     for(const file of files) {
@@ -43,8 +41,11 @@ app.post("/deploy",async (req,res)=>{
       "deployment",
       {
         id
-      }
+      } 
     )
+    const counts = await deployQueue.getJobCounts()
+    console.log(counts);
+    
     res.status(200).json({message: " uploaded"})
     } catch (error) {
       console.log(error);
