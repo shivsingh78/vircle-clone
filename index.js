@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import fs from "fs/promises"
 import { genrate } from './src/genrate.js';
 import simpleGit from 'simple-git';
 import path from 'path'
@@ -22,29 +23,37 @@ app.post("/deploy",async (req,res)=>{
     const outerPath=path.join(process.cwd(),"output",id)
     
     await git.clone(repoUrl,outerPath)
+    console.log("start");
     
-
     const files= await getAllFiles(outerPath)
     console.log(files);
     
     for(const file of files) {
       const key= path.relative(
         process.cwd(),
-        file
+        file 
       )
       await uploadFile(
         key,
         file
       )
     }
+    await fs.rm(
+      outerPath,
+      {recursive:true,
+        force:true,
+      }
+    )
     await deployQueue.add(
       "deployment",
       {
         id
       } 
     )
-    const counts = await deployQueue.getJobCounts()
-    console.log(counts);
+     
+    console.log(deployQueue.getJobCounts());
+    console.log(await deployQueue.getJobs());
+    
     
     res.status(200).json({message: " uploaded"})
     } catch (error) {
@@ -56,6 +65,8 @@ app.post("/deploy",async (req,res)=>{
     
     
 }) 
+
+
 
 
 const PORT = process.env.PORT || 3000;
