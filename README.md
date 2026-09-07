@@ -16,8 +16,8 @@ Test ✅
    ↓
 Deploy ✅
    ↓
-Verify 
+Verify ✅
    ↓
-Notify
+Notify✅
    ↓
-Rollback
+Rollback ✅

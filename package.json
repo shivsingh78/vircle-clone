@@ -9,6 +9,9 @@
     "worker": "nodemon -L worker.js",
     "build": "node build.js"
   },
+  "bin": {
+    "shipflow": "./cli/index.js"
+  },
   "keywords": [
     "cicd",
     "deployment",
@@ -26,8 +29,10 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.11.1",
+    "mime-types": "^3.0.2",
     "pg": "^8.23.0",
     "redis": "^6.0.0",
+    "shipflow": "link:",
     "simple-git": "^3.36.0"
   },
   "devDependencies": {
