@@ -177,6 +177,10 @@ for (const file of files) {
     process.env.INTERNAL_DEPLOYMENT_URL ||
     "http://api:8000/active/";
 
+    const publicDeploymentUrl =
+  process.env.PUBLIC_DEPLOYMENT_URL ||
+  "http://localhost:8000/active/";
+
   return {
     releaseId,
     buildDirectory,
@@ -184,5 +188,6 @@ for (const file of files) {
     deploymentPath:
       `releases/${releaseId}/build`,
     deploymentUrl,
+     publicDeploymentUrl,
   };
 }

@@ -15,174 +15,28 @@ const connection = new IORedis({
   port: Number(process.env.REDIS_PORT || 6379),
   maxRetriesPerRequest: null,
 });
+import { runPipeline } from "./src/pipeline.js";
 
 const worker = new Worker(
   "deployment-queue",
   async (job) => {
-    const { releaseId, repoUrl } = job.data;
-    console.log("Processing release:", releaseId);
+    const {
+      releaseId,
+      repoUrl,
+    } = job.data;
 
-    const release = await getRelease(releaseId);
+    console.log(
+      `Processing release: ${releaseId}`
+    );
 
-    if (!release) {
-      throw new Error(`Release ${releaseId} not found`);
-    }
-    console.log("Release found", release);
-
-    let currentStage = "RELEASE";
-
-    try {
-      currentStage = "PREPARE";
-      // -----------------------------
-      // PREPARE START
-      // -----------------------------
-
-      await updateRelease(releaseId, {
-        status: "RUNNNING",
-        currentStage: "PREPARE",
-        errorMessage: null,
-      });
-
-      const prepared = await prepareRelease({ releaseId, repoUrl });
-
-      console.log("Prepare result", prepared);
-
-      currentStage = "BUILD";
-      // -----------------------
-      // BUILD
-      // -----------------------
-
-      await updateRelease(releaseId, {
-        status: "RUNNING",
-        currentStage: "BUILD",
-        errorMessage: null,
-      });
-      const built = await buildRelease({
-        releaseId,
-        workspacePath: prepared.workspacePath,
-      });
-
-      console.log("Build result:", built);
-      // -----------------------
-      // TEMPORARY SUCCESS
-      // -----------------------
-
-      await updateRelease(releaseId, {
-        status: "SUCCESS",
-        currentStage: "BUILD",
-        errorMessage: null,
-      });
-
-      currentStage = "TEST";
-
-      await updateRelease(releaseId, {
-        status: "RUNNING",
-        currentStage,
-        errorMessage: null,
-      });
-
-      const tested = await testRelease({
-        releaseId,
-        workspacePath: built.workspacePath,
-      });
-
-      console.log("Test result:", tested);
-
-      await updateRelease(releaseId, {
-        status: "SUCCESS",
-        currentStage: "TEST",
-        errorMessage: null,
-      });
-
-      currentStage = "DEPLOY";
-
-await updateRelease(releaseId, {
-  status: "RUNNING",
-  currentStage,
-  errorMessage: null,
-});
-
-const deployed = await deployRelease({
-  releaseId,
-  workspacePath:
-    tested.workspacePath,
-});
-
-console.log(
-  "Deploy result:",
-  deployed
-);
-
-await updateRelease(releaseId, {
-  status: "RUNNING",
-  currentStage: "DEPLOY",
-  deploymentUrl:
-    deployed.deploymentUrl,
-  artifactPath:
-    deployed.deploymentPath,
-  errorMessage: null,
-});
-
-currentStage = "VERIFY";
-
-await updateRelease(releaseId, {
-  status: "RUNNING",
-  currentStage,
-  errorMessage: null,
-});
-
-const verified =
-  await verifyRelease({
-    releaseId,
-    deploymentUrl:
-      deployed.deploymentUrl,
-  });
-
-console.log(
-  "Verify result:",
-  verified
-);
- //add notification
-      await notifyRelease({
-        releaseId,
-        type: "RELEASE_SUCCESS",
-        message: `Release ${releaseId} successfully deployed and verified.`,
-      });
-
-await updateRelease(releaseId, {
-  status: "SUCCESS",
-  currentStage: "VERIFY",
-  errorMessage: null,
-});
-
-     
-
-      
-
-      return {
-        success: true,
-        releaseId,
-      };
-    } catch (error) {
-      console.error(`${currentStage} failed for ${releaseId}`);
-
-      console.error(error);
-      await updateRelease(releaseId, {
-        status: "FAILED",
-        currentStage,
-        errorMessage: error.message,
-      });
-      await notifyRelease({
-        releaseId,
-        type: "RELEASE_FAILED",
-        message: `Release ${releaseId} failed during ${currentStage}: ${error.message}`,
-      });
-      throw error;
-    }
+    return await runPipeline({
+      releaseId,
+      repoUrl,
+    });
   },
   {
     connection,
-  },
+  }
 );
 
 worker.on("completed", (job) => {

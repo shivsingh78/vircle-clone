@@ -6,8 +6,8 @@ import {
   GetObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-
-
+import mime from "mime-types";
+import path from 'path'
 import fs from "fs";
 import dotenv from "dotenv";
 

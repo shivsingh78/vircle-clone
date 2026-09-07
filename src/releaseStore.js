@@ -53,6 +53,7 @@ export async function updateRelease(
       error_message = COALESCE($4, error_message),
       deployment_url = COALESCE($5, deployment_url),
       artifact_path = COALESCE($6, artifact_path),
+      public_deployment_url = COALESCE($7, public_deployment_url),
       updated_at = CURRENT_TIMESTAMP
     WHERE release_id = $1
     RETURNING *
@@ -64,6 +65,7 @@ export async function updateRelease(
       updates.errorMessage ?? null,
       updates.deploymentUrl ?? null,
       updates.artifactPath ?? null,
+        updates.publicDeploymentUrl ?? null,
     ]
   );
 
